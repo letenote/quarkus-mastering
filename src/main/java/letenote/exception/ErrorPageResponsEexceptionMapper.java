@@ -1,7 +1,6 @@
 package letenote.exception;
 
-
-import letenote.dto.ResponseErrorDto;
+import letenote.dto.CatchFactoryDto;
 import org.jboss.logging.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -13,7 +12,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.util.Date;
 
 @Provider
 public class ErrorPageResponsEexceptionMapper implements ExceptionMapper<Exception> {
@@ -21,6 +19,8 @@ public class ErrorPageResponsEexceptionMapper implements ExceptionMapper<Excepti
     HttpHeaders headers;
     @Inject
     Logger logger;
+    @Inject
+    CatchFactoryDto catchFactoryDto;
     @Override
     public Response toResponse(Exception exception) {
         System.out.println("toResponse : " + exception.getClass() + " detail: " + exception );
@@ -36,44 +36,28 @@ public class ErrorPageResponsEexceptionMapper implements ExceptionMapper<Excepti
     private Response mapExceptionToResponse(Exception exception) {
         // Special mappings
         if (exception instanceof IllegalArgumentException) {
-            var statusCode = Response.Status.BAD_REQUEST.getStatusCode();
-            var exceptionResponse = new ResponseErrorDto()
-                    .setStatus(statusCode)
-                    .setShortCode(Response.Status.BAD_REQUEST.name())
-                    .setTimestamp(new Date())
-                    .setMessage(exception.getMessage());
-
-            return Response.status(statusCode).entity(exceptionResponse).build();
+            return Response
+                    .status(Response.Status.BAD_REQUEST.getStatusCode())
+                    .entity(catchFactoryDto.badRequestResponse(exception.getMessage()))
+                    .build();
         }
         else if(exception instanceof BadRequestException){
-            var statusCode = Response.Status.BAD_REQUEST.getStatusCode();
-            var exceptionResponse = new ResponseErrorDto()
-                    .setStatus(statusCode)
-                    .setShortCode(Response.Status.BAD_REQUEST.name())
-                    .setTimestamp(new Date())
-                    .setMessage(exception.getMessage());
-
-            return Response.status(statusCode).entity(exceptionResponse).build();
+            return Response
+                    .status(Response.Status.BAD_REQUEST.getStatusCode())
+                    .entity(catchFactoryDto.badRequestResponse(exception.getMessage()))
+                    .build();
         }
         else if(exception instanceof NotAllowedException){
-            var statusCode = Response.Status.METHOD_NOT_ALLOWED.getStatusCode();
-            var exceptionResponse = new ResponseErrorDto()
-                    .setStatus(statusCode)
-                    .setShortCode(Response.Status.METHOD_NOT_ALLOWED.name())
-                    .setTimestamp(new Date())
-                    .setMessage(exception.getMessage());
-
-            return Response.status(statusCode).entity(exceptionResponse).build();
+            return Response
+                    .status(Response.Status.METHOD_NOT_ALLOWED.getStatusCode())
+                    .entity(catchFactoryDto.methodNotAllowedResponse(exception.getMessage()))
+                    .build();
         }
         else if (exception instanceof NotSupportedException) {
-            var statusCode = Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode();
-            var exceptionResponse = new ResponseErrorDto()
-                    .setStatus(statusCode)
-                    .setShortCode(Response.Status.UNSUPPORTED_MEDIA_TYPE.name())
-                    .setTimestamp(new Date())
-                    .setMessage(exception.getMessage());
-
-            return Response.status(statusCode).entity(exceptionResponse).build();
+            return Response
+                    .status(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode())
+                    .entity(catchFactoryDto.unsupportedMediaTypeResponse(exception.getMessage()))
+                    .build();
         }
         // Use response from WebApplicationException as they are
         else if (exception instanceof WebApplicationException) {
@@ -90,7 +74,10 @@ public class ErrorPageResponsEexceptionMapper implements ExceptionMapper<Excepti
                     "FAILED_TO_PROCESS_REQUEST_TO: {}"
                     // "containerRequestContext.get().getUriInfo()"
             );
-            return Response.serverError().entity("Internal Server Error").build();
+            return Response
+                    .serverError()
+                    .entity(catchFactoryDto.internalServerErrorResponse("Internal Server Error)"))
+                    .build();
         }
     }
 }

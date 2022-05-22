@@ -2,7 +2,6 @@ package letenote;
 
 import letenote.model.Book;
 import letenote.service.BookService;
-
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
