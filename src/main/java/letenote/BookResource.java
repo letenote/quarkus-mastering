@@ -2,11 +2,10 @@ package letenote;
 
 import letenote.model.Book;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +26,70 @@ public class BookResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Book> getBooks(){
+    public Collection<Book> getBooks(){
         return books;
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Book createBook(Book book){
+        var addBook = Book.builder()
+                .id(UUID.randomUUID().toString())
+                .title(book.getTitle())
+                .description(book.getDescription())
+                .author(book.getAuthor())
+                .createdAt(System.currentTimeMillis())
+                .build();
+
+        books.add(addBook);
+        return  addBook;
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Book updateBook(@PathParam("id") String id, Book book){
+        String getIndex = null;
+        for (int i = 0; i < books.size(); i++) {
+            if( books.get(i).getId().equals(id) ) {
+                getIndex = String.valueOf(i);
+            }
+        }
+
+        if(getIndex != null ){
+            books.remove((int) Integer.parseInt(getIndex));
+            var updateBook = Book.builder()
+                    .id(id)
+                    .title(book.getTitle())
+                    .description(book.getDescription())
+                    .author(book.getAuthor())
+                    .createdAt(book.getCreatedAt())
+                    .updatedAt(System.currentTimeMillis())
+                    .build();
+
+            books.add(Integer.parseInt(getIndex), updateBook);
+            return updateBook;
+        }
+        return book;
+    }
+
+    @DELETE
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String deleteBook(@PathParam("id") String id){
+        String getIndex = null;
+        for (int i = 0; i < books.size(); i++) {
+            if( books.get(i).getId().equals(id) ) {
+                getIndex = String.valueOf(i);
+            }
+        }
+        if(getIndex != null ){
+            books.remove((int) Integer.parseInt(getIndex));
+            return "Book Removed";
+        }
+        return String.format("Book with %s not available", id);
     }
 }
