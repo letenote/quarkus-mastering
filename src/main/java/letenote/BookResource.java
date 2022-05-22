@@ -1,7 +1,10 @@
 package letenote;
 
 import letenote.model.Book;
+import letenote.service.BookService;
 
+import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
@@ -11,6 +14,8 @@ import java.util.UUID;
 
 @Path("/books")
 public class BookResource {
+    @Inject
+    BookService bookService;
     private final static List<Book> books= new ArrayList<>();
     static {
        var newBook = Book.builder()
@@ -33,12 +38,13 @@ public class BookResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Book createBook(Book book){
+    public Book createBook(@Valid Book book){
+        var bookIsValid = bookService.bookValidator(book);
         var addBook = Book.builder()
                 .id(UUID.randomUUID().toString())
-                .title(book.getTitle())
-                .description(book.getDescription())
-                .author(book.getAuthor())
+                .title(bookIsValid.getTitle())
+                .description(bookIsValid.getDescription())
+                .author(bookIsValid.getAuthor())
                 .createdAt(System.currentTimeMillis())
                 .build();
 

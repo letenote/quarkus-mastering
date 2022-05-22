@@ -1,9 +1,18 @@
 package letenote.model;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+
 public class Book {
     private String id;
+    @NotBlank(message = "Title shouldn't be blank")
+    @NotEmpty(message = "Title shouldn't be empty")
     private String title;
+    @NotBlank(message = "Author shouldn't be blank")
+    @NotEmpty(message = "Author shouldn't be empty")
     private String author;
+    @NotBlank(message = "Description shouldn't be blank")
+    @NotEmpty(message = "Description shouldn't be empty")
     private String description;
     private Long createdAt;
     private Long updatedAt;
