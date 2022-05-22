@@ -1,7 +1,8 @@
 package letenote;
 
 import letenote.model.Book;
-
+import letenote.service.BookService;
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ import java.util.UUID;
 
 @Path("/books")
 public class BookResource {
+    @Inject
+    BookService bookService;
     private final static List<Book> books= new ArrayList<>();
     static {
        var newBook = Book.builder()
@@ -33,12 +36,13 @@ public class BookResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Book createBook(Book book){
+    public Book createBook(Book book) throws Exception {
+        var bookIsValid = bookService.bookValidator(book);
         var addBook = Book.builder()
                 .id(UUID.randomUUID().toString())
-                .title(book.getTitle())
-                .description(book.getDescription())
-                .author(book.getAuthor())
+                .title(bookIsValid.getTitle())
+                .description(bookIsValid.getDescription())
+                .author(bookIsValid.getAuthor())
                 .createdAt(System.currentTimeMillis())
                 .build();
 
@@ -51,6 +55,7 @@ public class BookResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Book updateBook(@PathParam("id") String id, Book book){
+        var bookIsValid = bookService.bookValidator(book);
         String getIndex = null;
         for (int i = 0; i < books.size(); i++) {
             if( books.get(i).getId().equals(id) ) {
@@ -62,10 +67,10 @@ public class BookResource {
             books.remove((int) Integer.parseInt(getIndex));
             var updateBook = Book.builder()
                     .id(id)
-                    .title(book.getTitle())
-                    .description(book.getDescription())
-                    .author(book.getAuthor())
-                    .createdAt(book.getCreatedAt())
+                    .title(bookIsValid.getTitle())
+                    .description(bookIsValid.getDescription())
+                    .author(bookIsValid.getAuthor())
+                    .createdAt(bookIsValid.getCreatedAt())
                     .updatedAt(System.currentTimeMillis())
                     .build();
 
@@ -90,6 +95,6 @@ public class BookResource {
             books.remove((int) Integer.parseInt(getIndex));
             return "Book Removed";
         }
-        return String.format("Book with %s not available", id);
+        throw new BadRequestException(String.format("Book with %s not available", id));
     }
 }
